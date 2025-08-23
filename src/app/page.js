@@ -1,9 +1,13 @@
+import Hero from "@/components/Hero";
+import ProductHighlights from "@/components/ProductHighlights";
 
 
 export default function Home() {
   return (
  <div>
-  <p className="text-4xl text-red-500 font-bold">Allah is Almighty.</p>
+  <Hero/>
+  <ProductHighlights/>
+  
  </div>
   );
 }

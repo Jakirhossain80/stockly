@@ -2,19 +2,20 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { FcGoogle } from "react-icons/fc";
 
+const ALLOWED_REDIRECTS = ["/", "/login", "/products", "/dashboard"];
+
 export default function Login() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const [loadingGoogle, setLoadingGoogle] = useState(false);
   const [loadingCreds, setLoadingCreds] = useState(false);
   const [form, setForm] = useState({ identifier: "", password: "" });
 
-  // Map NextAuth ?error= to friendly messages (covers OAuth + Credentials)
+  // Friendly error mapping
   const errorText = useMemo(() => {
     const err = searchParams.get("error");
     if (!err) return "";
@@ -32,28 +33,23 @@ export default function Login() {
     return map[err] || map.Default;
   }, [searchParams]);
 
-  const callbackUrl = searchParams.get("callbackUrl") || "/products";
+  // Sanitize incoming callbackUrl; fallback to /products if unknown (e.g., /contact)
+  const callbackUrl = useMemo(() => {
+    const raw = searchParams.get("callbackUrl");
+    if (!raw) return "/products";
+    if (!raw.startsWith("/") || raw.startsWith("//")) return "/products";
+    const pathOnly = raw.split("?")[0].split("#")[0];
+    const safe =
+      ALLOWED_REDIRECTS.includes(pathOnly) ||
+      pathOnly.startsWith("/products") ||
+      pathOnly.startsWith("/category");
+    return safe ? raw : "/products";
+  }, [searchParams]);
 
   const handleGoogle = async () => {
     try {
       setLoadingGoogle(true);
-      // Use redirect:false so we can reliably navigate to the returned URL.
-      const res = await signIn("google", { callbackUrl, redirect: false });
-      if (res?.error) {
-        // Surface an OAuth error in the existing banner via ?error=
-        const params = new URLSearchParams(Array.from(searchParams.entries()));
-        params.set("error", "OAuthSignin");
-        router.replace(`?${params.toString()}`);
-        return;
-      }
-      if (res?.url) {
-        window.location.href = res.url;
-        return;
-      }
-      // Fallback: hit the provider route directly if no URL returned
-      window.location.href = `/api/auth/signin/google?callbackUrl=${encodeURIComponent(
-        callbackUrl
-      )}`;
+      await signIn("google", { callbackUrl }); // will redirect
     } finally {
       setLoadingGoogle(false);
     }
@@ -68,19 +64,12 @@ export default function Login() {
 
     try {
       setLoadingCreds(true);
-      // NextAuth will redirect by default if redirect: true
-      const res = await signIn("credentials", {
+      await signIn("credentials", {
         redirect: true,
         callbackUrl,
-        // Your CredentialsProvider `authorize` should read the same keys:
-        identifier: form.identifier, // email or username
+        identifier: form.identifier,
         password: form.password,
       });
-      // If redirect is true, we usually don't get here on success
-      if (res?.error) {
-        // With redirect: true, NextAuth usually appends ?error= to URL.
-        // This is just a safety no-op; the error banner uses ?error= already.
-      }
     } finally {
       setLoadingCreds(false);
     }
@@ -163,7 +152,6 @@ export default function Login() {
 
           {/* Google Button */}
           <button
-            type="button"
             onClick={handleGoogle}
             disabled={loadingGoogle}
             className="w-full inline-flex items-center justify-center gap-3 rounded-md bg-white px-4 py-2.5 text-sm font-medium text-slate-800 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:opacity-60 dark:bg-slate-900 dark:text-slate-100 dark:ring-slate-600 dark:hover:bg-slate-800 transition-all duration-500"

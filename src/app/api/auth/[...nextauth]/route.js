@@ -5,23 +5,21 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { getDb } from "@/lib/dbConnection";
 
-export const runtime = "nodejs";         // stable crypto on Vercel
-export const dynamic = "force-dynamic";  // avoid caching issues
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+const ALLOWED_REDIRECTS = ["/", "/login", "/products", "/dashboard"];
 
 export const authOptions = {
   pages: { signIn: "/login", error: "/login" },
-  session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 }, // 30 days
+  session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
   secret: process.env.NEXTAUTH_SECRET,
 
   providers: [
-    // ✅ Google OAuth (required for /api/auth/signin/google to resolve)
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-      // allowDangerousEmailAccountLinking: true, // optional
     }),
-
-    // ✅ Credentials (email OR username via "identifier")
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -84,20 +82,18 @@ export const authOptions = {
     },
 
     async jwt({ token, user }) {
-      // On first sign-in, copy fields from returned user
       if (user) {
         token.id = user.id || token.id;
         token.email = user.email || token.email;
         if (user.role) token.role = user.role;
       }
-
-      // If role not set (e.g., Google), fetch from DB by email
       if (!token.role && token.email) {
         const db = await getDb();
-        const doc = await db.collection("users").findOne({ email: token.email.toLowerCase() });
+        const doc = await db
+          .collection("users")
+          .findOne({ email: token.email.toLowerCase() });
         if (doc?.role) token.role = doc.role;
       }
-
       return token;
     },
 
@@ -109,8 +105,18 @@ export const authOptions = {
     },
 
     async redirect({ url, baseUrl }) {
-      // Keep internal redirects, default others to /products
-      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      // Normalize to an internal path
+      try {
+        const u = new URL(url, baseUrl);
+        const path = u.pathname;
+        const safe =
+          ALLOWED_REDIRECTS.includes(path) ||
+          path.startsWith("/products") ||
+          path.startsWith("/category");
+        if (safe) return `${baseUrl}${u.pathname}${u.search}${u.hash}`;
+      } catch {
+        /* noop */
+      }
       return `${baseUrl}/products`;
     },
   },
@@ -118,5 +124,3 @@ export const authOptions = {
 
 const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };
-
-

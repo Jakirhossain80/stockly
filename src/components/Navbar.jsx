@@ -4,8 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
+import { useSession, signOut } from "next-auth/react";
 import { FiMenu, FiX, FiMoon, FiSun } from "react-icons/fi";
-
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -15,6 +15,10 @@ export default function Navbar() {
   const { theme, setTheme, systemTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+
+  // Auth session (NextAuth)
+  const { data: session } = useSession();
+  const isAuthed = !!session?.user;
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -29,7 +33,7 @@ export default function Navbar() {
 
   const authLinks = [
     { label: "Login", href: "/login" },
-    { label: "Signup", href: "/signup" }, // Add this route if you implement it
+    { label: "Signup", href: "/signup" },
   ];
 
   const isActive = (href) => {
@@ -39,6 +43,11 @@ export default function Navbar() {
 
   const currentTheme = theme === "system" ? systemTheme : theme;
   const toggleTheme = () => setTheme(currentTheme === "dark" ? "light" : "dark");
+
+  const handleLogout = async () => {
+    // End session and send user to login (or change to "/" if you prefer)
+    await signOut({ callbackUrl: "/login" });
+  };
 
   return (
     <header
@@ -127,24 +136,38 @@ export default function Navbar() {
               )}
             </button>
 
-            {/* Auth links */}
-            <ul className="flex items-center gap-1">
-              {authLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="
-                      px-3 py-2 rounded-md text-sm font-medium
-                      text-slate-700 hover:text-white hover:bg-[#16A34A]
-                      dark:text-slate-200 dark:hover:bg-[#22C55E] dark:hover:text-slate-900
-                      transition-all duration-300
-                    "
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            {/* Auth area */}
+            {!isAuthed ? (
+              <ul className="flex items-center gap-1">
+                {authLinks.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="
+                        px-3 py-2 rounded-md text-sm font-medium
+                        text-slate-700 hover:text-white hover:bg-[#16A34A]
+                        dark:text-slate-200 dark:hover:bg-[#22C55E] dark:hover:text-slate-900
+                        transition-all duration-300
+                      "
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <button
+                onClick={handleLogout}
+                className="
+                  px-3 py-2 rounded-md text-sm font-medium
+                  text-slate-700 hover:text-white hover:bg-[#16A34A]
+                  dark:text-slate-200 dark:hover:bg-[#22C55E] dark:hover:text-slate-900
+                  transition-all duration-300
+                "
+              >
+                Logout
+              </button>
+            )}
           </div>
 
           {/* Mobile: menu button + theme toggle */}
@@ -219,25 +242,42 @@ export default function Navbar() {
             {/* Divider */}
             <div className="h-px bg-gray-200 dark:bg-slate-700 my-2" />
 
-            {/* Auth links */}
-            <ul className="flex flex-col">
-              {authLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    onClick={() => setMenuOpen(false)}
-                    className="
-                      block px-3 py-2 rounded-md text-base font-medium
-                      text-slate-700 hover:text-white hover:bg-[#16A34A]
-                      dark:text-slate-200 dark:hover:bg-[#22C55E] dark:hover:text-slate-900
-                      transition-colors duration-300
-                    "
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            {/* Auth area */}
+            {!isAuthed ? (
+              <ul className="flex flex-col">
+                {authLinks.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      onClick={() => setMenuOpen(false)}
+                      className="
+                        block px-3 py-2 rounded-md text-base font-medium
+                        text-slate-700 hover:text-white hover:bg-[#16A34A]
+                        dark:text-slate-200 dark:hover:bg-[#22C55E] dark:hover:text-slate-900
+                        transition-colors duration-300
+                      "
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <button
+                onClick={async () => {
+                  setMenuOpen(false);
+                  await handleLogout();
+                }}
+                className="
+                  block w-full text-left px-3 py-2 rounded-md text-base font-medium
+                  text-slate-700 hover:text-white hover:bg-[#16A34A]
+                  dark:text-slate-200 dark:hover:bg-[#22C55E] dark:hover:text-slate-900
+                  transition-colors duration-300
+                "
+              >
+                Logout
+              </button>
+            )}
           </div>
         </div>
       </nav>

@@ -2,13 +2,14 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { FcGoogle } from "react-icons/fc";
 
 export default function Login() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [loadingGoogle, setLoadingGoogle] = useState(false);
   const [loadingCreds, setLoadingCreds] = useState(false);
   const [form, setForm] = useState({ identifier: "", password: "" });
@@ -36,7 +37,23 @@ export default function Login() {
   const handleGoogle = async () => {
     try {
       setLoadingGoogle(true);
-      await signIn("google", { callbackUrl });
+      // Use redirect:false so we can reliably navigate to the returned URL.
+      const res = await signIn("google", { callbackUrl, redirect: false });
+      if (res?.error) {
+        // Surface an OAuth error in the existing banner via ?error=
+        const params = new URLSearchParams(Array.from(searchParams.entries()));
+        params.set("error", "OAuthSignin");
+        router.replace(`?${params.toString()}`);
+        return;
+      }
+      if (res?.url) {
+        window.location.href = res.url;
+        return;
+      }
+      // Fallback: hit the provider route directly if no URL returned
+      window.location.href = `/api/auth/signin/google?callbackUrl=${encodeURIComponent(
+        callbackUrl
+      )}`;
     } finally {
       setLoadingGoogle(false);
     }
@@ -146,6 +163,7 @@ export default function Login() {
 
           {/* Google Button */}
           <button
+            type="button"
             onClick={handleGoogle}
             disabled={loadingGoogle}
             className="w-full inline-flex items-center justify-center gap-3 rounded-md bg-white px-4 py-2.5 text-sm font-medium text-slate-800 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:opacity-60 dark:bg-slate-900 dark:text-slate-100 dark:ring-slate-600 dark:hover:bg-slate-800 transition-all duration-500"

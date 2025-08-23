@@ -16,23 +16,24 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    // Allow next-themes to toggle class="dark" on <html>
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Suspense
-          fallback={
-            <div className="min-h-screen flex items-center justify-center">
-              <p className="text-slate-600 dark:text-slate-300">Loading…</p>
-            </div>
-          }
-        >
-          <Providers>
-            {/* Add top padding because Navbar is fixed (h-16) */}
-            <Navbar />
-            <main className="pt-16">{children}</main>
-            <Footer />
-          </Providers>
-        </Suspense>
+        <Providers>
+          {/* Fixed Navbar (h-16). Add padding-top to main so content isn't hidden */}
+          <Navbar />
+          <main className="pt-16">
+            <Suspense
+              fallback={
+                <div className="min-h-[50vh] flex items-center justify-center">
+                  <p className="text-slate-600 dark:text-slate-300">Loading…</p>
+                </div>
+              }
+            >
+              {children}
+            </Suspense>
+          </main>
+          <Footer />
+        </Providers>
       </body>
     </html>
   );

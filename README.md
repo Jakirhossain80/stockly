@@ -1,6 +1,7 @@
-# 📦 Stockly
+Project Name: Stockly
 
-![Stockly Banner](./public/stockly-banner.png) <!-- Replace with your banner/logo -->
+Live Link: https://stockly-sigma.vercel.app 
+
 
 A **modern e-commerce application** built with **Next.js (App Router)**.  
 Stockly allows users to **browse products, view details, and manage inventory** with **authentication & protected routes**.  

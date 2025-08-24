@@ -1,8 +1,8 @@
 // components/Products.jsx
 import Link from "next/link";
-import { getDb } from "@/lib/dbConnection";
+import { getDb } from "../../../src/lib/dbConnection";
 
-export const dynamic = "force-dynamic"; // always fresh in dev
+export const dynamic = "force-dynamic";
 
 export default async function Products() {
   // 1) Read from MongoDB directly

@@ -1,10 +1,10 @@
 // app/products/[id]/page.js
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getDb } from "@/lib/dbConnection";
+import { getDb } from "../../../lib/dbConnection";
 import { ObjectId } from "mongodb";
 
-export const dynamic = "force-dynamic"; // fresh in dev
+export const dynamic = "force-dynamic";
 
 // Normalize any weird id forms like: ObjectId("abc...") -> abc...
 function normalizeId(raw) {

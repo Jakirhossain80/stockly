@@ -1,4 +1,11 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* optional, but helps browsers pick colors correctly */
+:root { color-scheme: light; }
+.dark { color-scheme: dark; }
+
 
 body {
   @apply bg-gray-50 dark:bg-slate-900 

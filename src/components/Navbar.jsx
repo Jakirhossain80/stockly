@@ -1,20 +1,16 @@
+// components/Navbar.jsx
 "use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useTheme } from "next-themes";
 import { useSession, signOut } from "next-auth/react";
-import { FiMenu, FiX, FiMoon, FiSun } from "react-icons/fi";
+import { FiMenu, FiX } from "react-icons/fi";
+import ThemeToggle from "../components/ThemeToggle";
 
 export default function Navbar() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
-
-  // next-themes: avoid hydration mismatch
-  const { theme, setTheme, systemTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
 
   // Auth session (NextAuth)
   const { data: session } = useSession();
@@ -40,9 +36,6 @@ export default function Navbar() {
     if (href === "/") return pathname === "/";
     return pathname.startsWith(href);
   };
-
-  const currentTheme = theme === "system" ? systemTheme : theme;
-  const toggleTheme = () => setTheme(currentTheme === "dark" ? "light" : "dark");
 
   const handleLogout = async () => {
     // End session and send user to login (or change to "/" if you prefer)
@@ -117,24 +110,8 @@ export default function Navbar() {
             {/* Divider */}
             <div className="h-6 w-px bg-gray-200 dark:bg-slate-700" />
 
-            {/* Theme toggle */}
-            <button
-              onClick={toggleTheme}
-              className="
-                inline-flex items-center justify-center
-                rounded-md p-2
-                text-slate-700 hover:text-[#16A34A] hover:bg-gray-100
-                dark:text-slate-200 dark:hover:text-[#22C55E] dark:hover:bg-slate-700/60
-                transition-all duration-500
-              "
-              aria-label="Toggle theme"
-            >
-              {mounted && currentTheme === "dark" ? (
-                <FiSun className="text-xl" />
-              ) : (
-                <FiMoon className="text-xl" />
-              )}
-            </button>
+            {/* Theme toggle (component) */}
+            <ThemeToggle />
 
             {/* Auth area */}
             {!isAuthed ? (
@@ -172,23 +149,8 @@ export default function Navbar() {
 
           {/* Mobile: menu button + theme toggle */}
           <div className="flex lg:hidden items-center gap-2">
-            <button
-              onClick={toggleTheme}
-              className="
-                inline-flex items-center justify-center
-                rounded-md p-2
-                text-slate-700 hover:text-[#16A34A] hover:bg-gray-100
-                dark:text-slate-200 dark:hover:text-[#22C55E] dark:hover:bg-slate-700/60
-                transition-all duration-500
-              "
-              aria-label="Toggle theme"
-            >
-              {mounted && currentTheme === "dark" ? (
-                <FiSun className="text-xl" />
-              ) : (
-                <FiMoon className="text-xl" />
-              )}
-            </button>
+            {/* Theme toggle (component) */}
+            <ThemeToggle />
 
             <button
               onClick={() => setMenuOpen((v) => !v)}

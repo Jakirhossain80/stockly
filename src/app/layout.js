@@ -1,8 +1,9 @@
 // app/layout.js
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
-import Providers from "./providers";
+import Navbar from "../components/Navbar";
+import ThemeProvider from "../components/ThemeProvider";
+
 import Footer from "@/components/Footer";
 import { Suspense } from "react";
 
@@ -18,7 +19,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Providers>
+        <ThemeProvider>
           {/* Fixed Navbar (h-16). Add padding-top to main so content isn't hidden */}
           <Navbar />
           <main className="pt-16">
@@ -33,7 +34,7 @@ export default function RootLayout({ children }) {
             </Suspense>
           </main>
           <Footer />
-        </Providers>
+        </ThemeProvider>
       </body>
     </html>
   );

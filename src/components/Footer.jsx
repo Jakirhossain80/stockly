@@ -22,8 +22,7 @@ export default function Footer() {
   const navLinks = [
     { label: "Home", href: "/" },
     { label: "Products", href: "/products" },
-    { label: "About", href: "/about" },     // add the page if you need it
-    { label: "Contact", href: "/contact" }, // add the page if you need it
+   
   ];
 
   const socials = [

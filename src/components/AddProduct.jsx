@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Spinner from "../components/Spinner";
 
 export default function AddProduct() {
   const [form, setForm] = useState({
@@ -146,7 +147,14 @@ export default function AddProduct() {
             disabled={loading}
             className="inline-flex items-center gap-2 rounded-md bg-[#16A34A] px-4 py-2 text-sm font-medium text-white hover:bg-[#15803D] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#16A34A] disabled:opacity-60 dark:bg-[#22C55E] dark:text-slate-900 dark:hover:bg-[#16A34A] transition-all duration-500"
           >
-            {loading ? "Adding..." : "Add Product"}
+            {loading ? (
+              <>
+                <Spinner size="sm" label="Adding…" />
+                Adding...
+              </>
+            ) : (
+              "Add Product"
+            )}
           </button>
           <button
             type="button"

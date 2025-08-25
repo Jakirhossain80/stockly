@@ -1,6 +1,7 @@
 // components/Products.jsx
 import Link from "next/link";
 import { getDb } from "../../../src/lib/dbConnection";
+import Image from "next/image";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +42,7 @@ export default async function Products() {
           >
             {/* Image */}
             <div className="relative aspect-[16/10] w-full overflow-hidden bg-gray-100 dark:bg-slate-700">
-              <img
+              <Image
                 src={p.imageLink}
                 alt={p.productname}
                 className="h-full w-full object-contain p-4 transition-all duration-500 group-hover:scale-[1.02]"
